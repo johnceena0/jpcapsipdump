@@ -321,6 +321,7 @@ int main(int argc, char *argv[])
                 " *    Following %%-codes are expanded in -d and -t: %%f (from/caller), %%t (to/callee),\n"
                 "      %%i (call-id), and call date/time (see 'man 3 strftime' for details)\n"
                 " *    Trailing argument is pcap filter expression syntax, see 'man 7 pcap-filter'\n"
+                "      Warning! \"close\" trigger activates only after 5 minutes pause\n"
                 , PCAPSIPDUMP_VERSION);
 	return 1;
     }

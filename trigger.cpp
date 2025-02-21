@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include "pcapsipdump_lib.h"
 #include "trigger.h"
+#include <sys/wait.h>
 
 using namespace std;
 
@@ -79,6 +80,8 @@ void Trigger::trigger(const vector <vector <string> > *t_const,
                       const char *callid,
                       const time_t time) {
     vector <vector <string> > t = *t_const;
+    vector<pid_t> child_pids;  // PID list of child processess
+
     for(vector <vector <string> >::iterator i = t.begin(); i != t.end(); i++) {
         pid_t pid = fork();
         if (pid == 0) {
@@ -107,9 +110,18 @@ void Trigger::trigger(const vector <vector <string> > *t_const,
             argv.push_back(NULL);
             execv(argv[0], &argv[0]);
             cout << "Warning: Can't execv()" << endl;
+            exit(1);
         } else if (pid < 0) {
             cout << "Warning: Can't fork()" << endl;
+        } else {
+            child_pids.push_back(pid);  // save PID of child process
         }
+    }
+
+    // waiting for close all child processess
+    for (vector<pid_t>::iterator it = child_pids.begin(); it != child_pids.end(); ++it) {
+        int status;
+        waitpid(*it, &status, 0);
     }
 }
 

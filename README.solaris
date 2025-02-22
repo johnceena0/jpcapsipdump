@@ -1,7 +1,5 @@
-svn checkout https://svn.code.sf.net/p/pcapsipdump/code/trunk pcapsipdump-code
-cd pcapsipdump-code
 make
-sudo make install
+make install
 
 
 Usage

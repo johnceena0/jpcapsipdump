@@ -80,7 +80,7 @@ void Trigger::trigger(const vector <vector <string> > *t_const,
                       const char *callid,
                       const time_t time) {
     vector <vector <string> > t = *t_const;
-    vector<pid_t> child_pids;  // PID list of child processess
+    vector<pid_t> child_pids;  // Список PID дочерних процессов
 
     for(vector <vector <string> >::iterator i = t.begin(); i != t.end(); i++) {
         pid_t pid = fork();
@@ -94,7 +94,8 @@ void Trigger::trigger(const vector <vector <string> > *t_const,
                     s = (char *)fn;
                 } else if (strchr(js, '%')){
                     s = (char *)malloc(1024);
-                    expand_dir_template(s, 1024, js, from, to, callid, time);
+                    // В функции Trigger::trigger:
+					expand_dir_template(s, 1024, js, from, to, callid, time, fn);
                 } else {
                     s = (char *)js;
                 }
@@ -110,15 +111,15 @@ void Trigger::trigger(const vector <vector <string> > *t_const,
             argv.push_back(NULL);
             execv(argv[0], &argv[0]);
             cout << "Warning: Can't execv()" << endl;
-            exit(1);
+            exit(1);  // Завершаем дочерний процесс в случае ошибки execv
         } else if (pid < 0) {
             cout << "Warning: Can't fork()" << endl;
         } else {
-            child_pids.push_back(pid);  // save PID of child process
+            child_pids.push_back(pid);  // Сохраняем PID дочернего процесса
         }
     }
 
-    // waiting for close all child processess
+    // Ожидаем завершения всех дочерних процессов
     for (vector<pid_t>::iterator it = child_pids.begin(); it != child_pids.end(); ++it) {
         int status;
         waitpid(*it, &status, 0);

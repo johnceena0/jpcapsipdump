@@ -1,6 +1,16 @@
+BUILD
+
 make
 make install
 
+Clone from https://svn.code.sf.net/p/pcapsipdump/code/trunk/ with some improvements 
+
+Changes:
+- Creating zombie processes after close file triggers was fixed
+- Added some %-codes: %L, %q
+
+WARNING
+These changes was done with help by AI (DeepSeek).
 
 Usage
 
@@ -33,5 +43,4 @@ Usage: pcapsipdump [-fpUt] [-i <interface> | -r <file>] [-d <working directory>]
       exec:"/bin/blah args..." - fork and execute /bin/blah with arguments
       sh:"shell code" - fork and execute /bin/sh -c "shell code"
 Following %-codes are expanded in -d and -t: %f (from/caller), %t (to/callee),
-%i (call-id), and call date/time (see 'man 3 strftime' for details)
-    
+%i (call-id), %L (Milliseconds since Unix Epoch), %q (File name - it used with '-t' key ONLY) and call date/time (see 'man 3 strftime' for details)

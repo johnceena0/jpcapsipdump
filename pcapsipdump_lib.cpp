@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include <stddef.h>
 #include <time.h>
 #include <arpa/inet.h>
@@ -40,7 +41,8 @@ size_t expand_dir_template(char *s, size_t max, const char *format,
                            const char *from,
                            const char *to,
                            const char *callid,
-                           const time_t t) {
+                           const time_t t,
+                           const char *filename) { // Добавлен параметр filename
     struct tm *tm = localtime(&t);
     size_t fl = strlen(format);
     size_t s1l = fl + 256;
@@ -78,6 +80,25 @@ size_t expand_dir_template(char *s, size_t max, const char *format,
                     *s1p = asciisan[*s1p & 0x7f];
                 }
                 i++;
+            } else if (c1 == 'q' && filename != NULL) {
+                char *fname_copy = strdup(filename);
+                char *base = basename(fname_copy);
+                strlcpy(s1p, base, s1l - (s1p - s1));
+                for(char *c = s1p; *c; c++){
+                    *c = asciisan[*c & 0x7f];
+                }
+                s1p += strlen(base);
+                free(fname_copy);
+                i++;
+            } else if (c1 == 'L') {
+                // Добавляем Linux Timestamp с миллисекундами
+                char timestamp[32];
+                struct timeval tv;
+                gettimeofday(&tv, NULL);
+                snprintf(timestamp, sizeof(timestamp), "%ld%03ld", tv.tv_sec, tv.tv_usec / 1000);
+                strlcpy(s1p, timestamp, s1l - (s1p - s1));
+                s1p += strlen(timestamp);
+                i++;
             } else {
                 *(s1p++) = c0;
             }
@@ -100,7 +121,7 @@ int opts_sanity_check_d(char **opt_fntemplate)
     struct stat sb;
     FILE *f;
 
-    expand_dir_template(s, sizeof(s), *opt_fntemplate, "", "", "", (int)time(NULL));
+    expand_dir_template(s, sizeof(s), *opt_fntemplate, "", "", "", (int)time(NULL),"");
     if (stat(s, &sb) == 0) {
         if (!S_ISDIR(sb.st_mode)) {
             fprintf(stderr, "Bad option '-d %s': File exists (expecting directory name or filename template)", orig_opt_fntemplate);
@@ -120,7 +141,7 @@ int opts_sanity_check_d(char **opt_fntemplate)
         *opt_fntemplate = (char *)malloc(strlen(s) + 128);
         strcpy(*opt_fntemplate, orig_opt_fntemplate);
         strcat(*opt_fntemplate, "/%Y%m%d/%H/%Y%m%d-%H%M%S-%f-%t-%i.pcap");
-        expand_dir_template(s, sizeof(s), orig_opt_fntemplate, "", "", "", 0);
+        expand_dir_template(s, sizeof(s), orig_opt_fntemplate, "", "", "", 0, "");
     } else {
         if (!strchr(*opt_fntemplate, '%') || !strchr(s, '/')) {
             fprintf(stderr, "Bad option '-d %s': Neither directory nor filename template", orig_opt_fntemplate);

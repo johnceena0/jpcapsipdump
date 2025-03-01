@@ -319,9 +319,9 @@ int main(int argc, char *argv[])
                 "      exec:\"/bin/blah args...\" - fork and execute /bin/blah with arguments\n"
                 "      sh:\"shell code\" - fork and execute /bin/sh -c \"shell code\"\n"
                 " *    Following %%-codes are expanded in -d and -t: %%f (from/caller), %%t (to/callee),\n"
-                "      %%i (call-id), and call date/time (see 'man 3 strftime' for details)\n"
-                " *    Trailing argument is pcap filter expression syntax, see 'man 7 pcap-filter'\n"
+                "      %%i (call-id), %%L (Milliseconds since Unix Epoch), %%q (File name - it used with '-t' key ONLY) and call date/time (see 'man 3 strftime' for details)\n"
                 "      Warning! \"close\" trigger activates only after 5 minutes pause\n"
+                " *    Trailing argument is pcap filter expression syntax, see 'man 7 pcap-filter'\n"
                 , PCAPSIPDUMP_VERSION);
 	return 1;
     }
@@ -615,9 +615,8 @@ int main(int argc, char *argv[])
                                 } else {
                                     char fn[1024], dn[1024];
                                     call_skip_cnt = opt_call_skip_n;
-                                    expand_dir_template(fn, sizeof(fn), opt_fntemplate,
-                                                        caller, called, callid,
-                                                        pkt_header->ts.tv_sec);
+									// В функции main, при создании пути файла:
+									expand_dir_template(fn, sizeof(fn), opt_fntemplate, caller, called, callid, pkt_header->ts.tv_sec, NULL);
                                     if (strchr(fn, '/')) {
                                         strcpy(dn, fn);
                                         mkdir_p(dirname(dn), 0777);

@@ -17,7 +17,8 @@ size_t expand_dir_template(char *s, size_t max, const char *format,
                            const char *from,
                            const char *to,
                            const char *callid,
-                           const time_t t);
+                           const time_t t,
+                           const char *filename); // Добавлен параметр filename
 
 struct iphdr* ethernet_get_header_ip(const void *pkt_data);
 
